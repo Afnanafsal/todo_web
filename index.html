@@ -264,7 +264,7 @@
     </div>
   </div>
 
-  <div class="delete-bin" id="deleteBin" onclick="confirmDelete()">🗑️</div>
+  <div class="delete-bin" id="deleteBin" ondragover="allowDrop(event)" ondrop="drop(event)">🗑️</div>
 
   <div class="confirm-popup-container" id="confirmPopup">
     <div class="confirm-popup-content">
@@ -373,8 +373,8 @@
   function drop(event) {
     event.preventDefault();
     if (draggedTask && !draggedTask.classList.contains('completed-task')) {
-      draggedTask.parentNode.removeChild(draggedTask);
-      draggedTask = null;
+      deleteConfirmationTask = draggedTask; // Set the delete confirmation task
+      openConfirmPopup();
     }
   }
 
@@ -393,12 +393,6 @@
       deleteConfirmationTask = null;
     }
     closeConfirmPopup();
-  }
-
-  function confirmDelete() {
-    if (deleteConfirmationTask) {
-      openConfirmPopup();
-    }
   }
 </script>
 </body>
