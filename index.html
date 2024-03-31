@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modern Todo List</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap">
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .todo-date {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  .todo-card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    position: relative;
+    cursor: grab;
+    transition: transform 0.3s ease;
+  }
+
+  .todo-card.dragging {
+    opacity: 0.5;
+  }
+
+  .todo-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .task-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .task-label {
+    font-weight: bold;
+    color: #333;
+  }
+
+  .task-value {
+    color: #666;
+  }
+
+  .add-btn {
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    padding: 25px 40px; /* Adjusted height */
+    border-radius: 50%;
+    cursor: pointer;
+    outline: none;
+    font-size: 36px;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 999; /* Above all */
+  }
+
+  .delete-bin {
+    background-color: #f44336;
+    color: #fff;
+    border: none;
+    padding: 40px; /* Increased size */
+    border-radius: 50%;
+    cursor: pointer;
+    outline: none;
+    font-size: 36px;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999; /* Above all */
+    transition: transform 0.3s ease;
+  }
+
+  .delete-bin:hover {
+    background-color: #d32f2f;
+    transform: scale(1.1); /* Enlarge when hovered */
+  }
+
+  .popup-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .popup-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    width: 300px;
+  }
+
+  .popup-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+  }
+
+  .popup-input {
+    width: calc(100% - 20px);
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    outline: none;
+  }
+
+  .popup-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .popup-radio {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .popup-radio label {
+    margin-right: 10px;
+  }
+
+  .popup-btn {
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .completed-tasks {
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+  }
+
+  .completed-btn {
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .completed-btn.completed {
+    background-color: #8bc34a;
+  }
+
+  .completed-btn:hover {
+    background-color: #43a047;
+  }
+
+  .confirm-popup-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+  }
+
+  .confirm-popup-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .confirm-popup-btns {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  .confirm-popup-btn {
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    outline: none;
+    margin: 0 10px;
+  }
+
+  .confirm-popup-btn.cancel {
+    background-color: #f44336;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Modern Todo List</h1>
+
+  <div class="todo-container" id="todoContainer"></div>
+
+  <div class="completed-tasks" id="completedTasks">
+    <h2>Completed Tasks</h2>
+  </div>
+
+  <div class="popup-container" id="popup-container">
+    <div class="popup-content">
+      <span class="popup-close" onclick="closePopup()">X</span>
+      <div class="popup-label">Task</div>
+      <input type="text" class="popup-input" id="taskInput" placeholder="Enter Task">
+      <div class="popup-label">Start Time</div>
+      <input type="datetime-local" class="popup-input" id="taskStartTime" placeholder="Start Time" required>
+      <div class="popup-radio">
+        <div class="popup-label">End Time</div>
+        <input type="radio" id="endTimeYes" name="endTimeOption" value="yes" onchange="toggleEndTimeSelector(true)">
+        <label for="endTimeYes">Yes</label>
+        <input type="radio" id="endTimeNo" name="endTimeOption" value="no" checked onchange="toggleEndTimeSelector(false)">
+        <label for="endTimeNo">No</label>
+      </div>
+      <input type="datetime-local" class="popup-input" id="taskEndTime" placeholder="End Time" disabled>
+      <button class="popup-btn" onclick="addTask()">Add Task</button>
+    </div>
+  </div>
+
+  <div class="delete-bin" id="deleteBin" onclick="confirmDelete()">🗑️</div>
+
+  <div class="confirm-popup-container" id="confirmPopup">
+    <div class="confirm-popup-content">
+      <p>Are you sure you want to delete this task?</p>
+      <div class="confirm-popup-btns">
+        <button class="confirm-popup-btn" onclick="deleteTask(true)">Yes</button>
+        <button class="confirm-popup-btn cancel" onclick="closeConfirmPopup()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="add-btn" onclick="openPopup()">+</button>
+
+<script>
+  let draggedTask = null;
+  let deleteConfirmationTask = null;
+
+  function openPopup() {
+    document.getElementById('popup-container').style.display = 'flex';
+  }
+
+  function closePopup() {
+    document.getElementById('popup-container').style.display = 'none';
+  }
+
+  function openConfirmPopup() {
+    document.getElementById('confirmPopup').style.display = 'flex';
+  }
+
+  function closeConfirmPopup() {
+    document.getElementById('confirmPopup').style.display = 'none';
+  }
+
+  function addTask() {
+    const taskInput = document.getElementById('taskInput').value.trim();
+    const taskStartTime = document.getElementById('taskStartTime').value;
+    const endTimeOption = document.querySelector('input[name="endTimeOption"]:checked').value;
+    const taskEndTime = endTimeOption === 'yes' ? document.getElementById('taskEndTime').value : '';
+
+    if (taskInput !== '' && taskStartTime !== '') {
+      const task = document.createElement('div');
+      task.className = 'todo-card';
+      task.innerHTML = `
+        <div class="task-row">
+          <span class="task-label">Task:</span>
+          <span class="task-value">${taskInput}</span>
+        </div>
+        <div class="task-row">
+          <span class="task-label">Start Time:</span>
+          <span class="task-value">${taskStartTime}</span>
+        </div>
+      `;
+      
+      if (endTimeOption === 'yes') {
+        const taskEndTimeSpan = document.createElement('div');
+        taskEndTimeSpan.className = 'task-row';
+        taskEndTimeSpan.innerHTML = `
+          <span class="task-label">End Time:</span>
+          <span class="task-value">${taskEndTime}</span>
+        `;
+        task.appendChild(taskEndTimeSpan);
+      }
+
+      const completeBtn = document.createElement('button');
+      completeBtn.textContent = 'Complete';
+      completeBtn.className = 'completed-btn';
+      completeBtn.onclick = function() {
+        completeTask(task);
+        task.removeChild(completeBtn);
+      };
+      task.appendChild(completeBtn);
+
+      task.setAttribute('draggable', 'true');
+      task.setAttribute('ondragstart', 'drag(event)');
+      document.getElementById('todoContainer').appendChild(task);
+
+      clearPopupFields();
+      closePopup();
+    }
+  }
+
+  function clearPopupFields() {
+    document.getElementById('taskInput').value = '';
+    document.getElementById('taskStartTime').value = '';
+    document.getElementById('endTimeNo').checked = true;
+    document.getElementById('taskEndTime').disabled = true;
+    document.getElementById('taskEndTime').value = '';
+  }
+
+  function toggleEndTimeSelector(enable) {
+    document.getElementById('taskEndTime').disabled = !enable;
+  }
+
+  function allowDrop(event) {
+    event.preventDefault();
+  }
+
+  function drag(event) {
+    draggedTask = event.target;
+    if (draggedTask.classList.contains('completed-task')) {
+      event.preventDefault(); // Prevent dragging completed tasks
+    }
+  }
+
+  function drop(event) {
+    event.preventDefault();
+    if (draggedTask && !draggedTask.classList.contains('completed-task')) {
+      draggedTask.parentNode.removeChild(draggedTask);
+      draggedTask = null;
+    }
+  }
+
+  function completeTask(task) {
+    task.querySelector('.completed-btn').textContent = 'Completed';
+    task.style.backgroundColor = '#8bc34a'; // Change background color
+    task.style.color = '#fff'; // Change font color to white
+    task.classList.add('completed-task'); // Add completed-task class
+    const completedTasksContainer = document.getElementById('completedTasks');
+    completedTasksContainer.appendChild(task);
+  }
+
+  function deleteTask(confirmed) {
+    if (confirmed && deleteConfirmationTask) {
+      deleteConfirmationTask.parentNode.removeChild(deleteConfirmationTask);
+      deleteConfirmationTask = null;
+    }
+    closeConfirmPopup();
+  }
+
+  function confirmDelete() {
+    if (deleteConfirmationTask) {
+      openConfirmPopup();
+    }
+  }
+</script>
+</body>
+</html>
