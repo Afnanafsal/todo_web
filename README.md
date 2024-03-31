@@ -23,7 +23,7 @@ This application can be deployed easily using GitHub Pages. Simply upload the `i
 
 ## Credits
 
-This project is inspired by modern todo list designs and built as a learning exercise by [Your Name].
+This project is inspired by modern todo list designs and built as a learning exercise by afnanafsal
 
 ## License
 
